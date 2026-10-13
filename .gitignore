@@ -33,3 +33,685 @@ google-services.json
 
 # Android Profiling
 *.hprof
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Habit Tracker</title>
+
+  <!-- Mobile & PWA Configuration -->
+  <meta name="theme-color" content="#2563eb">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Habits">
+
+  <!-- Embedded SVG App Icon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232563eb'/><path d='M30 52 L43 65 L70 38' stroke='white' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232563eb'/><path d='M30 52 L43 65 L70 38' stroke='white' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Web App Manifest Data URI -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Habit Tracker","short_name":"Habits","start_url":".","display":"standalone","background_color":"%23ffffff","theme_color":"%232563eb"}'>
+
+  <style>
+    :root {
+      --bg-page: #f4f6f8;
+      --bg-card: #ffffff;
+      --text-main: #1a202c;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
+      --input-border: #cbd5e1;
+      --item-bg: #f8fafc;
+      --item-hover: #f1f5f9;
+      --track-bg: #e2e8f0;
+      --btn-secondary-bg: #f1f5f9;
+      --btn-secondary-text: #475569;
+      --card-shadow: rgba(0, 0, 0, 0.08);
+    }
+
+    body.dark-mode {
+      --bg-page: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: #334155;
+      --input-border: #475569;
+      --item-bg: #0f172a;
+      --item-hover: #1e293b;
+      --track-bg: #334155;
+      --btn-secondary-bg: #334155;
+      --btn-secondary-text: #cbd5e1;
+      --card-shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px 16px 40px;
+      display: flex;
+      justify-content: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .card {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px var(--card-shadow);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .control-btn {
+      background: var(--btn-secondary-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .celebration-banner {
+      display: none;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    body.dark-mode .celebration-banner {
+      background: #064e3b;
+      border-color: #047857;
+      color: #a7f3d0;
+    }
+
+    .progress-section {
+      background: var(--item-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      background-color: var(--track-bg);
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background-color: #10b981;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .input-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      outline: none;
+    }
+
+    select.category-select {
+      padding: 10px 8px;
+      font-size: 0.88rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    button.add-btn {
+      padding: 10px 14px;
+      color: #ffffff;
+      background-color: #2563eb;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .filters-wrapper {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex: 1;
+      gap: 4px;
+      background: var(--btn-secondary-bg);
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: var(--bg-card);
+      color: var(--text-main);
+      box-shadow: 0 1px 3px var(--card-shadow);
+    }
+
+    .category-filter-select {
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      background: var(--btn-secondary-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--item-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    li.completed .habit-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #2563eb;
+    }
+
+    .habit-text {
+      flex: 1;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      cursor: pointer;
+      word-break: break-word;
+    }
+
+    .edit-inline-input {
+      flex: 1;
+      padding: 4px 8px;
+      font-size: 0.95rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid #3b82f6;
+      border-radius: 4px;
+    }
+
+    .category-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+
+    .cat-general { background: #f1f5f9; color: #475569; }
+    .cat-health  { background: #dcfce7; color: #15803d; }
+    .cat-work    { background: #e0e7ff; color: #4338ca; }
+    .cat-personal{ background: #fae8ff; color: #86198f; }
+    .cat-learning{ background: #fef3c7; color: #b45309; }
+
+    body.dark-mode .cat-general { background: #334155; color: #cbd5e1; }
+    body.dark-mode .cat-health  { background: #064e3b; color: #86efac; }
+    body.dark-mode .cat-work    { background: #1e1b4b; color: #a5b4fc; }
+    body.dark-mode .cat-personal{ background: #4a044e; color: #f0abfc; }
+    body.dark-mode .cat-learning{ background: #451a03; color: #fcd34d; }
+
+    .streak-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #ea580c;
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+      padding: 2px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    body.dark-mode .streak-badge {
+      background: #431407;
+      border-color: #7c2d12;
+      color: #fdba74;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .icon-btn.delete-btn:hover {
+      color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 20px 0;
+      font-size: 0.9rem;
+    }
+
+    .actions-footer {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-left {
+      display: flex;
+      gap: 6px;
+    }
+
+    .footer-btn {
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      border: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header-row">
+      <h1>Habit Tracker</h1>
+      <div class="header-controls">
+        <button class="control-btn" id="soundToggleBtn" onclick="toggleSound()" title="Toggle sound effects">
+          🔊
+        </button>
+        <button class="control-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark/light mode">
+          🌙
+        </button>
+      </div>
+    </div>
+
+    <div class="celebration-banner" id="celebrationBanner">
+      🎉 Awesome work! All habits completed for today!
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span>Today's Progress</span>
+        <span id="progressText">0% (0 of 0)</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+    </div>
+    
+    <div class="input-form">
+      <input type="text" id="habitInput" placeholder="Add a habit (e.g., Read 15 mins)..." />
+      <select id="habitCategory" class="category-select" title="Choose Category">
+        <option value="Health">Health</option>
+        <option value="Work">Work</option>
+        <option value="Learning">Learning</option>
+        <option value="Personal">Personal</option>
+        <option value="General" selected>General</option>
+      </select>
+      <button class="add-btn" onclick="addHabit()">Add</button>
+    </div>
+
+    <div class="filters-wrapper">
+      <div class="filter-tabs">
+        <button class="filter-btn active" onclick="setStatusFilter('all')">All</button>
+        <button class="filter-btn" onclick="setStatusFilter('active')">Active</button>
+        <button class="filter-btn" onclick="setStatusFilter('completed')">Done</button>
+      </div>
+
+      <select id="categoryFilter" class="category-filter-select" onchange="setCategoryFilter(this.value)">
+        <option value="all">All Tags</option>
+        <option value="Health">Health</option>
+        <option value="Work">Work</option>
+        <option value="Learning">Learning</option>
+        <option value="Personal">Personal</option>
+        <option value="General">General</option>
+      </select>
+    </div>
+
+    <ul id="habitList"></ul>
+
+    <div class="actions-footer">
+      <div class="footer-left">
+        <button class="footer-btn" onclick="exportData()" title="Download habits backup">
+          💾 Export
+        </button>
+        <button class="footer-btn" onclick="document.getElementById('importFile').click()" title="Load habits backup">
+          📂 Import
+        </button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)" accept=".json" />
+      </div>
+      <button class="footer-btn" onclick="resetForNewDay()" title="Uncheck habits for tomorrow">
+        🌅 Start New Day
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let habits = JSON.parse(localStorage.getItem('habits')) || [];
+    let currentStatusFilter = 'all';
+    let currentCategoryFilter = 'all';
+    let editingId = null;
+
+    let darkMode = localStorage.getItem('darkMode') === 'true';
+    let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('soundEnabled', soundEnabled);
+      document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+
+    function playChimeSound() {
+      if (!soundEnabled) return;
+      initAudio();
+
+      const now = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.15, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.25);
+
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, now + 0.1);
+      gain2.gain.setValueAtTime(0.15, now + 0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.1);
+      osc2.stop(now + 0.45);
+    }
+
+    function playCelebrationFanfare() {
+      if (!soundEnabled) return;
+      initAudio();
+
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      const startTime = audioCtx.currentTime;
+
+      notes.forEach((freq, idx) => {
+        const time = startTime + idx * 0.12;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + 0.35);
+      });
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle('dark-mode', darkMode);
+      document.getElementById('themeToggleBtn').textContent = darkMode ? '☀️' : '🌙';
+    }
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      localStorage.setItem('darkMode', darkMode);
+      applyTheme();
+    }
+
+    function saveHabits() {
+      localStorage.setItem('habits', JSON.stringify(habits));
+    }
+
+    function updateProgress() {
+      const total = habits.length;
+      const completed = habits.filter(h => h.completed).length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      document.getElementById('progressText').textContent = `${percentage}% (${completed} of ${total})`;
+      document.getElementById('progressBar').style.width = `${percentage}%`;
+
+      const banner = document.getElementById('celebrationBanner');
+      if (total > 0 && completed === total) {
+        banner.style.display = 'block';
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    function setStatusFilter(filter) {
+      currentStatusFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const text = btn.textContent.toLowerCase();
+        const match = (filter === 'all' && text === 'all') ||
+                      (filter === 'active' && text === 'active') ||
+                      (filter === 'completed' && text === 'done');
+        btn.classList.toggle('active', match);
+      });
+      renderHabits();
+    }
+
+    function setCategoryFilter(category) {
+      currentCategoryFilter = category;
+      renderHabits();
+    }
+
+    function renderHabits() {
+      const list = document.getElementById('habitList');
+      list.innerHTML = '';
+
+      const filtered = habits.filter(habit => {
+        if (currentStatusFilter === 'active' && habit.completed) return false;
+        if (currentStatusFilter === 'completed' && !habit.completed) return false;
+        if (currentCategoryFilter !== 'all' && (habit.category || 'General') !== currentCategoryFilter) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        let msg = 'No habits found in this view.';
+        if (habits.length === 0) msg = 'No habits added yet. Type one above!';
+        list.innerHTML = `<li class="empty-state">${msg}</li>`;
+        updateProgress();
+        return;
+      }
+
+      filtered.forEach(habit => {
+        const li = document.createElement('li');
+        if (habit.completed) li.classList.add('completed');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'checkbox';
+        checkbox.checked = habit.completed;
+        checkbox.onchange = () => toggleHabit(habit.id);
+        li.appendChild(checkbox);
+
+        if (editingId === habit.id) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.className = 'edit-inline-input';
+          editInput.value = habit.text;
+
+          const finishEdit = () => {
+            const val = editInput.value.trim();
+            if (val !== '') {
+              habit.text = val;
+              saveHabits();
+            }
+            editingId = null;
+            renderHabits();
+          };
+
+          editInput.onkeydown = (e) => {
+            if (e.key === 'Enter') finishEdit();
+            if (e.key === 'Escape') {
+              editingId = null;
+              renderHabits();
+            }
+          };
+          editInput.onblur = finishEdit;
+
+          li.appendChild(editInput);
+          setTimeout(() => editInput.focus(), 0);
+        } else {
+          const span = document.createElement('span');
+          span.className = 'habit-text';
+          span.textContent = habit.text;
+          span.title = 'Double-click to edit';
+          span.ondblclick = () => {
+            editingId = habit.id;
+            renderHabits();
+          };
+          li.appendChild(span);
+        }
+
+        const cat = habit.category || 'General';
+        const catBadge = document.createElement('span');
+        catBadge.className = `category-badge cat-${cat.toLowerCase()}`;
+        catBadge.textContent = cat;
+        li.appendChild(catBadge);
+
+        const streakBadge = document.createElement('span');
+        streakBadge.className = 'streak-badge';
+        streakBadge.innerHTML = `🔥 ${habit.streak || 0}d`;
+        li.appendChild(streakBadge);
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'icon-btn';
+        editBtn.innerHTML = '✏️';
+        editBtn.title = 'Edit habit';
+        editBtn.onclick = () => {
+          editingId = habit.id;
+          renderHabits();
+        };
+        li.appendChild(editBtn);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn delete-btn';
+        delBtn.innerHTML = '&times;';
+        delBtn.title = 'Delete';
+        delBtn.onclick = () => deleteHabit(habit.id);
+        li.appendChild(delBtn);
+
+        list.appendChild(li);
+      });
+
+      updateProgress();
+    }
+
+    function addHabit() {
+      const input = document.ge
